@@ -26,6 +26,7 @@ To use this program, you'll need to have Python and the required libraries insta
 
 ```bash
 pip install pycryptodome
+```
 
 ## Usage
 
