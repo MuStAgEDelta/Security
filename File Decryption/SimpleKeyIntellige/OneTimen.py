@@ -18,7 +18,7 @@ def encrypt(message, key):
     encrypted_blocks = [key[i:i+block_size] for i in range(0, len(message), block_size)]
     
     # Split the message into blocks of the key length
-    
+    pdb.set_trace()
     message_blocks = [message[i:i+block_size] for i in range(0, len(message), block_size)]
 
     for block in message_blocks:
