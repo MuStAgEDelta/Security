@@ -24,6 +24,8 @@ This Python program allows you to encrypt and decrypt files using various encryp
 ## Installation<a name="installation"></a>
 
 To use this program, you'll need to have Python and the required libraries installed. You can install the necessary libraries using pip:
+
+```bash
 pip install pycryptodome
 
 ## Usage
@@ -59,4 +61,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 Enjoy secure file encryption and decryption with this tool! If you have any questions or need further assistance, feel free to reach out.
 
-##Known Problem <a name="Known-Problem"></a>
+## Known Problem <a name="Known-Problem"></a>
+
+Issue 1: Windows do not close when finished encrypting or decrypting
+Issue 2: Feedback messages are stacked, does not look nice
