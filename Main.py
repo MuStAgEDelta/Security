@@ -1,14 +1,26 @@
+#GUI
 import tkinter as tk
 from tkinter import filedialog
+#Crypto
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
+from Crypto.Hash import SHA256
+from Crypto.Util.Padding import pad, unpad
 import os
 import caesar
 import OneTimen
 import ReVerstOneTime
+
+#Debugger
 import pdb
-from Crypto.Util.Padding import pad, unpad
+
+'''
+Author: RaphaelFehr
+Description: This Python program provides functions for encrypting and decrypting data using various encryption methods. It includes implementations of popular encryption algorithms like Caesar, AES, and more. It can be used for secure data transmission and storage.
+License: MIT License
+'''
+
 
 
 def generat_key(mode):
@@ -35,9 +47,19 @@ def generat_key(mode):
         
 
 # Funktionen zur Verschlüsselung und Entschlüsselung
+'''
+@A 
+Input Mode, describe wich mode we want to use for Encryption
+
+Supportet: ECB, CBC, Caesar and AS (Asymetrisch)
+'''
 def encrypt_file(mode):
+    secret = secret_entry.get()
+    hash_object = SHA256.new()
+    hash_object.update(secret.encode())
+    key = hash_object.digest()
     file_path = filedialog.askopenfilename()
-    key = b'\xfd\t\xca9g\x93\x07\xc3h\x03.\xf5\x9f\x0b\xe9E'  # Gemeinsamer Schlüssel für ECB und CBC
+    #key = b'\xfd\t\xca9g\x93\x07\xc3h\x03.\xf5\x9f\x0b\xe9E'  # Gemeinsamer Schlüssel für ECB und CBC
     if mode == 'ECB':
         with open(file_path, 'r') as file:
             content = file.read()
@@ -47,7 +69,7 @@ def encrypt_file(mode):
     elif mode == 'CBC':
         with open(file_path, 'r') as file:
             content = file.read()
-        ciphertext = AES.new(key,AES.MODE_CBC, b'\x1a\xf5\x80\xd3\x6b\x24\x10\xcb\x90\xe7\x7f\x29\xa3\x58\x0d\xc2')
+        ciphertext = AES.new(key,AES.MODE_CBC, key)
         ciphertext = ciphertext.encrypt(pad(content.encode('utf-8'), AES.block_size))
 
     elif mode == 'Caesar':
@@ -81,10 +103,20 @@ def encrypt_file(mode):
         encrypted_file.write(ciphertext)
     show_feedback("File was successfully encrypted")
        
+'''
+@A 
+Input @Mode, describe wich mode we want to use for Decryption
+
+Supportet: ECB, CBC, Caesar and AS (Asymetrisch)
+'''
 
 def decrypt_file(mode):
     file_path = filedialog.askopenfilename()
-    key = b'\xfd\t\xca9g\x93\x07\xc3h\x03.\xf5\x9f\x0b\xe9E'  # Gemeinsamer Schlüssel für ECB und CBC
+    #key = b'\xfd\t\xca9g\x93\x07\xc3h\x03.\xf5\x9f\x0b\xe9E'  # Gemeinsamer Schlüssel für ECB und CBC
+    secret = secret_entry.get()
+    hash_object = SHA256.new()
+    hash_object.update(secret.encode())
+    key = hash_object.digest()
     if mode == 'ECB':
         with open(file_path, 'rb') as file:
             content = file.read()
@@ -130,11 +162,21 @@ def decrypt_file(mode):
 
 
 # Funktionen zur Anzeige der ECB, CBC, Caesar und Asymmetrische Fenster
+'''
+GUI Handeling: 
+'''
+
+
 def open_ecb_window():
     ecb_window = tk.Toplevel(root)
     ecb_window.title("ECB Verschlüsselung/Entschlüsselung")
     encrypt_button_ecb = tk.Button(ecb_window, text="Datei verschlüsseln (ECB)", command=lambda: encrypt_file('ECB'))
     decrypt_button_ecb = tk.Button(ecb_window, text="Datei entschlüsseln (ECB)", command=lambda: decrypt_file('ECB'))
+    secret_label = tk.Label(ecb_window, text="Key:")
+    secret_label.pack()
+    global secret_entry
+    secret_entry = tk.Entry(ecb_window)
+    secret_entry.pack()
     encrypt_button_ecb.pack()
     decrypt_button_ecb.pack()
 
@@ -143,6 +185,11 @@ def open_cbc_window():
     cbc_window.title("CBC Verschlüsselung/Entschlüsselung")
     encrypt_button_cbc = tk.Button(cbc_window, text="Datei verschlüsseln (CBC)", command=lambda: encrypt_file('CBC'))
     decrypt_button_cbc = tk.Button(cbc_window, text="Datei entschlüsseln (CBC)", command=lambda: decrypt_file('CBC'))
+    secret_label = tk.Label(cbc_window, text="Key")
+    secret_label.pack()
+    global secret_entry
+    secret_entry = tk.Entry(cbc_window)
+    secret_entry.pack()
     encrypt_button_cbc.pack()
     decrypt_button_cbc.pack()
 
@@ -151,28 +198,41 @@ def open_caesar_window():
     caesar_window.title("Caesar Verschlüsselung/Entschlüsselung")
     shift_label = tk.Label(caesar_window, text="Shift-Anzahl:")
     shift_label.pack()
-    global shift_entry
-    shift_entry = tk.Entry(caesar_window)
-    shift_entry.pack()
+    global secret_entry
+    secret_entry = tk.Entry(caesar_window)
+    secret_entry.pack()
     encrypt_button_caesar = tk.Button(caesar_window, text="Datei verschlüsseln (Caesar)", command=lambda: encrypt_file('Caesar'))
     decrypt_button_caesar = tk.Button(caesar_window, text="Datei entschlüsseln (Caesar)", command=lambda: decrypt_file('Caesar'))
     encrypt_button_caesar.pack()
     decrypt_button_caesar.pack()
+    
+'''
+Handles the Messages 
+'''
+def show_feedback(message):
+    label = tk.Label(root, text=message, padx=20, pady=20)
+    label.pack()
 
+'''
+Handles the Asymetric Windows with Buttons
+'''
 def open_asymmetric_window():
     asym_window = tk.Toplevel(root)
     asym_window.title("Asymmetrische Verschlüsselung/Entschlüsselung")
     KeyGen_button_AS= tk.Button(asym_window, text= "Generat key Pair", command= lambda: generat_key('AS'))
     encrypt_button_AS= tk.Button(asym_window, text= "Datei verschlüsseln (AEAD)", command= lambda: encrypt_file('AS'))
     decrypt_button_AS= tk.Button(asym_window, text= "Datei entschlüsseln (AEAD)", command= lambda: decrypt_file('AS'))
+    #secret_label = tk.Label(asym_window, text="Key")
+    #secret_label.pack()
+    #global secret_entry
+    #secret_entry = tk.Entry(asym_window)
+    #secret_entry.pack()
     KeyGen_button_AS.pack() 
     encrypt_button_AS.pack()
     decrypt_button_AS.pack()
     
 
-def show_feedback(message):
-    label = tk.Label(root, text=message, padx=20, pady=20)
-    label.pack()
+
 
 root = tk.Tk()
 root.title("Wählen Sie Ihre Verschlüsselungs- oder Entschlüsselungsmethode")
@@ -193,3 +253,15 @@ asym_button.pack()
 
 
 root.mainloop()
+
+'''
+MIT License
+
+Copyright (c) 2023 Raphael Fehr
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+'''
