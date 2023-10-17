@@ -4,8 +4,7 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
 import os
-import Encrypt_caesar
-import Decrypt_caesar
+import caesar
 import OneTimen
 import ReVerstOneTime
 import pdb
@@ -27,6 +26,7 @@ def generat_key(mode):
         file_out = open("publicKey.pem", "wb")
         file_out.write(public_key)
         file_out.close()
+        show_feedback("created Key Pair")
         
         
             
@@ -51,12 +51,11 @@ def encrypt_file(mode):
         ciphertext = ciphertext.encrypt(pad(content.encode('utf-8'), AES.block_size))
 
     elif mode == 'Caesar':
-        global shift_entry
         shift= shift_entry.get()
         with open(file_path, 'r') as file:
             content = file.read()
-            ciphertext = Encrypt_caesar.encrypt_text(content, shift)
-        return
+            ciphertext = caesar.caesar_cipher(content, shift)
+            ciphertext = ciphertext.encode()
        
     
     
@@ -80,6 +79,7 @@ def encrypt_file(mode):
         
     with open(file_path + f'_{mode}.txt', 'wb') as encrypted_file:
         encrypted_file.write(ciphertext)
+    show_feedback("File was successfully encrypted")
        
 
 def decrypt_file(mode):
@@ -96,12 +96,13 @@ def decrypt_file(mode):
             content = file.read()
         ciphertext = AES.new(key, AES.MODE_CBC,b'\x1a\xf5\x80\xd3\x6b\x24\x10\xcb\x90\xe7\x7f\x29\xa3\x58\x0d\xc2')
         plaintext = unpad(ciphertext.decrypt(content), AES.block_size)
+        
     elif mode == 'Caesar':
-        shift= int(entry.get())
-        shift = shift_entry.get()
-        with open(file_path, 'rb') as file:
+        shift= shift_entry.get()
+        with open(file_path, 'r') as file:
             content = file.read()
-            ciphertext = Dencrypt_caesar.shift_text(content, shift)
+            plaintext = caesar.caesar_decipher(content, shift)
+            plaintext = plaintext.encode()
             
         #return
     elif mode == 'AS':
@@ -125,6 +126,7 @@ def decrypt_file(mode):
     with open(file_path + f'_{mode}.txt', 'wb') as encrypted_file:
         file= file_path + f'_{mode}.txt'
         encrypted_file.write(plaintext)
+    show_feedback("File was successfully decrypted")
 
 
 # Funktionen zur Anzeige der ECB, CBC, Caesar und Asymmetrische Fenster
@@ -149,6 +151,7 @@ def open_caesar_window():
     caesar_window.title("Caesar Verschlüsselung/Entschlüsselung")
     shift_label = tk.Label(caesar_window, text="Shift-Anzahl:")
     shift_label.pack()
+    global shift_entry
     shift_entry = tk.Entry(caesar_window)
     shift_entry.pack()
     encrypt_button_caesar = tk.Button(caesar_window, text="Datei verschlüsseln (Caesar)", command=lambda: encrypt_file('Caesar'))
@@ -165,6 +168,11 @@ def open_asymmetric_window():
     KeyGen_button_AS.pack() 
     encrypt_button_AS.pack()
     decrypt_button_AS.pack()
+    
+
+def show_feedback(message):
+    label = tk.Label(root, text=message, padx=20, pady=20)
+    label.pack()
 
 root = tk.Tk()
 root.title("Wählen Sie Ihre Verschlüsselungs- oder Entschlüsselungsmethode")
@@ -180,5 +188,8 @@ ecb_button.pack()
 cbc_button.pack()
 caesar_button.pack()
 asym_button.pack()
+
+
+
 
 root.mainloop()

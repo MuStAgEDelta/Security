@@ -11,6 +11,7 @@ This Python program allows you to encrypt and decrypt files using various encryp
 5. [Generating RSA Keys](#generating-rsa-keys)
 6. [Contributing](#contributing)
 7. [License](#license)
+8. [Known Problem](#Known-Problem)
 
 ## Features<a name="features"></a>
 
@@ -59,3 +60,5 @@ Feel free to contribute to this project by submitting issues or pull requests on
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 Enjoy secure file encryption and decryption with this tool! If you have any questions or need further assistance, feel free to reach out.
+
+##Known Problem <a name="Known-Problem"></a>
