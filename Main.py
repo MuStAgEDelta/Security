@@ -1,28 +1,55 @@
 import tkinter as tk
 from tkinter import filedialog
-from Crypto.Cipher import AES
+from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.PublicKey import RSA
+from Crypto.Random import get_random_bytes
 import os
 import Encrypt_caesar
 import Decrypt_caesar
 import OneTimen
 import ReVerstOneTime
 import pdb
+from Crypto.Util.Padding import pad, unpad
 
 
-global shift_entry
+def generat_key(mode):
+
+    if mode == 'AS':        
+        key = RSA.generate(2048)
+        private_key = key.export_key()
+        public_key = key.publickey().export_key()
+        file_out = open("privateKey.pem", "wb")
+        file_out.write(private_key)
+        file_out.close()
+        
+        public_key = key.publickey().export_key()
+        
+        file_out = open("publicKey.pem", "wb")
+        file_out.write(public_key)
+        file_out.close()
+        
+        
+            
+            
+           
+        
 
 # Funktionen zur Verschlüsselung und Entschlüsselung
 def encrypt_file(mode):
     file_path = filedialog.askopenfilename()
-    key = b'SuperSecretKey12'  # Gemeinsamer Schlüssel für ECB und CBC
+    key = b'\xfd\t\xca9g\x93\x07\xc3h\x03.\xf5\x9f\x0b\xe9E'  # Gemeinsamer Schlüssel für ECB und CBC
     if mode == 'ECB':
         with open(file_path, 'r') as file:
             content = file.read()
-            
-        ciphertext = OneTimen.xor_text(content,key)
+        ciphertext = AES.new(key,AES.MODE_ECB)
+        ciphertext = ciphertext.encrypt(pad(content.encode('utf-8'), AES.block_size))
+        
     elif mode == 'CBC':
-        iv = os.urandom(16)
-        cipher = AES.new(key, AES.MODE_CBC, iv)
+        with open(file_path, 'r') as file:
+            content = file.read()
+        ciphertext = AES.new(key,AES.MODE_CBC, b'\x1a\xf5\x80\xd3\x6b\x24\x10\xcb\x90\xe7\x7f\x29\xa3\x58\x0d\xc2')
+        ciphertext = ciphertext.encrypt(pad(content.encode('utf-8'), AES.block_size))
+
     elif mode == 'Caesar':
         global shift_entry
         shift= shift_entry.get()
@@ -32,21 +59,43 @@ def encrypt_file(mode):
         return
        
     
+    
+    elif mode == 'AS':
+        file_out = open("encrypted_data.bin", "wb")
+
+        recipient_key = RSA.import_key(open("publicKey.pem").read())
+        session_key = get_random_bytes(16)
+
+        # Encrypt the session key with the public RSA key
+        cipher_rsa = PKCS1_OAEP.new(recipient_key)
+        enc_session_key = cipher_rsa.encrypt(session_key)
+
+        # Encrypt the data with the AES session key
+        cipher_aes = AES.new(session_key, AES.MODE_GCM)
+        with open(file_path, 'r') as file:
+            content = file.read()
+        ciphertext, tag = cipher_aes.encrypt_and_digest(content.encode('utf-8'))
+        [ file_out.write(x) for x in (enc_session_key, cipher_aes.nonce, tag, ciphertext) ]
+        file_out.close()
+        
     with open(file_path + f'_{mode}.txt', 'wb') as encrypted_file:
-        file= file_path + f'_{mode}.txt'
-        file.write(str(ciphertext))
+        encrypted_file.write(ciphertext)
+       
 
 def decrypt_file(mode):
     file_path = filedialog.askopenfilename()
-    key = b'SuperSecretKey12'  # Gemeinsamer Schlüssel für ECB und CBC
+    key = b'\xfd\t\xca9g\x93\x07\xc3h\x03.\xf5\x9f\x0b\xe9E'  # Gemeinsamer Schlüssel für ECB und CBC
     if mode == 'ECB':
         with open(file_path, 'rb') as file:
             content = file.read()
-            
-        cipher = ReVerstOneTime.xor_text(content,key)
+        ciphertext = AES.new(key, AES.MODE_ECB)
+        plaintext = unpad(ciphertext.decrypt(content), AES.block_size)
+        
     elif mode == 'CBC':
-        iv = os.urandom(16)
-        cipher = AES.new(key, AES.MODE_CBC, iv)
+        with open(file_path, 'rb') as file:
+            content = file.read()
+        ciphertext = AES.new(key, AES.MODE_CBC,b'\x1a\xf5\x80\xd3\x6b\x24\x10\xcb\x90\xe7\x7f\x29\xa3\x58\x0d\xc2')
+        plaintext = unpad(ciphertext.decrypt(content), AES.block_size)
     elif mode == 'Caesar':
         shift= int(entry.get())
         shift = shift_entry.get()
@@ -54,15 +103,28 @@ def decrypt_file(mode):
             content = file.read()
             ciphertext = Dencrypt_caesar.shift_text(content, shift)
             
-        with open(file_path + '_caesar.enc', 'wb') as encrypted_file:
-            encrypted_file.write(ciphertext)
-        return
+        #return
+    elif mode == 'AS':
+        file_in = open("encrypted_data.bin", "rb")
 
-    with open(file_path, 'rb') as encrypted_file:
-        ciphertext = encrypted_file.read()
-        plaintext = cipher.decrypt(ciphertext)
-    with open(file_path[:-7], 'wb') as decrypted_file:
-        decrypted_file.write(plaintext)
+        private_key = RSA.import_key(open("privateKey.pem").read())
+
+        enc_session_key, nonce, tag, ciphertext = \
+           [ file_in.read(x) for x in (private_key.size_in_bytes(), 16, 16, -1) ]
+        file_in.close()
+
+        # Decrypt the session key with the private RSA key
+        cipher_rsa = PKCS1_OAEP.new(private_key)
+        session_key = cipher_rsa.decrypt(enc_session_key)
+
+        # Decrypt the data with the AES session key
+        cipher_aes = AES.new(session_key, AES.MODE_GCM, nonce)
+        data = cipher_aes.decrypt_and_verify(ciphertext, tag)
+        plaintext = data
+
+    with open(file_path + f'_{mode}.txt', 'wb') as encrypted_file:
+        file= file_path + f'_{mode}.txt'
+        encrypted_file.write(plaintext)
 
 
 # Funktionen zur Anzeige der ECB, CBC, Caesar und Asymmetrische Fenster
@@ -97,8 +159,12 @@ def open_caesar_window():
 def open_asymmetric_window():
     asym_window = tk.Toplevel(root)
     asym_window.title("Asymmetrische Verschlüsselung/Entschlüsselung")
-    KeyGen_button_AS= tk.Button(asym_window, text= "Generat key Pair", command= lambda: generatkey())
-    KeyGen_button_AS.pack()    
+    KeyGen_button_AS= tk.Button(asym_window, text= "Generat key Pair", command= lambda: generat_key('AS'))
+    encrypt_button_AS= tk.Button(asym_window, text= "Datei verschlüsseln (AEAD)", command= lambda: encrypt_file('AS'))
+    decrypt_button_AS= tk.Button(asym_window, text= "Datei entschlüsseln (AEAD)", command= lambda: decrypt_file('AS'))
+    KeyGen_button_AS.pack() 
+    encrypt_button_AS.pack()
+    decrypt_button_AS.pack()
 
 root = tk.Tk()
 root.title("Wählen Sie Ihre Verschlüsselungs- oder Entschlüsselungsmethode")
