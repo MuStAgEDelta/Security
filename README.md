@@ -23,10 +23,7 @@ This Python program allows you to encrypt and decrypt files using various encryp
 ## Installation<a name="installation"></a>
 
 To use this program, you'll need to have Python and the required libraries installed. You can install the necessary libraries using pip:
-
-```bash
 pip install pycryptodome
-```
 
 ## Usage
 
