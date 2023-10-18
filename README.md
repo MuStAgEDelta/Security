@@ -2,6 +2,8 @@
 
 This Python program allows you to encrypt and decrypt files using various encryption methods. It also provides the functionality to generate public and private keys for RSA encryption. The program uses the Tkinter library for the user interface and the Crypto library for encryption and decryption.
 
+For the Assistant: If you look at the code, read it from bottom up. 
+
 ## Table of Contents
 
 1. [Features](#features)
@@ -20,6 +22,7 @@ This Python program allows you to encrypt and decrypt files using various encryp
 - Asymmetric encryption and decryption using RSA.
 - Key generation for RSA encryption.
 - User-friendly graphical interface using Tkinter.
+- Password is not saved and the file will encrypted with a Hash value of your PW
 
 ## Installation<a name="installation"></a>
 
@@ -30,7 +33,8 @@ pip install pycryptodome
 
 ## Usage
 
-Run the program by executing the script. You will be presented with options to choose an encryption method: ECB, CBC, Caesar, or Asymmetric. Select the desired method, and follow the instructions to encrypt or decrypt a file. For Asymmetric encryption, you can also generate RSA key pairs.
+Run the program by executing the programm ( double click on the file or python Main.py). You will be presented with options to choose an encryption method: ECB, CBC, Caesar, or Asymmetric. Select the desired method and follow the instructions to encrypt or decrypt a file. For Asymmetric encryption, you can also generate RSA key pairs.
+Be aware that the files
 
 ## Encryption Methods
 

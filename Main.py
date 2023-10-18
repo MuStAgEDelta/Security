@@ -102,7 +102,7 @@ def encrypt_file(mode, password='password1234'):
         [ file_out.write(x) for x in (enc_session_key, cipher_aes.nonce, tag, ciphertext) ]
         file_out.close()
         
-    with open(file_path + f'_{mode}.txt', 'wb') as encrypted_file:
+    with open(file_path + f'_{mode}encrypt.txt', 'wb') as encrypted_file:
         encrypted_file.write(ciphertext)
     show_feedback("File was successfully encrypted")
        
@@ -158,8 +158,8 @@ def decrypt_file(mode, password):
         data = cipher_aes.decrypt_and_verify(ciphertext, tag)
         plaintext = data
 
-    with open(file_path + f'_{mode}.txt', 'wb') as encrypted_file:
-        file= file_path + f'_{mode}.txt'
+    with open(file_path + f'_{mode}decrypt.txt', 'wb') as encrypted_file:
+        file= file_path + f'_{mode}decrypt.txt'
         encrypted_file.write(plaintext)
     show_feedback("File was successfully decrypted")
 
