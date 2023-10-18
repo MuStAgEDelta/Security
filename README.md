@@ -22,7 +22,7 @@ For the Assistant: If you look at the code, read it from bottom up.
 - Asymmetric encryption and decryption using RSA.
 - Key generation for RSA encryption.
 - User-friendly graphical interface using Tkinter.
-- Password is not saved and the file will encrypted with a Hash value of your PW
+- Password is not saved and the file will be encrypted with a Hash value of your PW
 
 ## Installation<a name="installation"></a>
 
