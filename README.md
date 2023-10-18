@@ -36,7 +36,7 @@ Run the program by executing the script. You will be presented with options to c
 
 ### ECB and CBC
 
-- **ECB (Electronic Codebook):** This method encrypts the file using a symmetric key. You can choose either ECB or CBC mode.
+- **ECB (Electronic Codebook):** This method encrypts the file using a symmetric key.
 - **CBC (Cipher Block Chaining):** Similar to ECB, but with a different mode for added security.
 
 ### Caesar Cipher
@@ -45,7 +45,7 @@ Caesar encryption allows you to shift the characters in the file by a specified 
 
 ### Asymmetric Encryption
 
-Asymmetric encryption using RSA allows you to generate a key pair and use the public key to encrypt and the private key to decrypt files.
+Asymmetric encryption using RSA allows you to generate a key pair and use the public key . In this mode we generate a Session key, which we use to encrypte the Message, then we use the RSA to encrypt the session key. 
 
 ## Generating RSA Keys
 
